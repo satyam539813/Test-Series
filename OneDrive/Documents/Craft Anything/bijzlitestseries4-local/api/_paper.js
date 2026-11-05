@@ -27,6 +27,19 @@ function hostBridge(paperPath) {
   const nativeGetItem = Storage.prototype.getItem;
   window.__BIJZLI_PAPER__ = PAPER_PATH;
   try { localStorage.setItem("test-ui-theme", "dark"); } catch (_) {}
+  if (document.querySelector(".left-panel")) {
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "classes-palette-toggle";
+    toggle.textContent = "☰ Questions";
+    toggle.setAttribute("aria-label", "Toggle question palette");
+    toggle.addEventListener("click", () => document.body.classList.toggle("classes-palette-open"));
+    document.body.appendChild(toggle);
+    document.querySelector(".left-panel").addEventListener("click", (event) => {
+      if (event.target.closest("button")) document.body.classList.remove("classes-palette-open");
+    });
+  }
+
 
   const finite = (value, fallback = 0) => {
     const number = Number(value);
@@ -430,7 +443,32 @@ export function patchDummy(js) {
     'html[data-bijzli-gate="true"] .gate-palette-btn.answered,html[data-bijzli-gate="true"] .gate-legend-dot.answered{background:#065f46;border-color:rgba(255,255,255,.08);color:#a7f3d0}',
     'html[data-bijzli-gate="true"] .gate-palette-btn.marked,html[data-bijzli-gate="true"] .gate-legend-dot.marked{background:#4c1d95;border-color:rgba(255,255,255,.08);color:#ddd6fe}',
     'html[data-bijzli-gate="true"] .gate-palette-btn.answered-marked,html[data-bijzli-gate="true"] .gate-legend-dot.answered-marked{background:#92400e;border-color:rgba(255,255,255,.08);color:#fde68a}',
-    'html[data-bijzli-gate="true"] .natInput{border-radius:14px}'
+    'html[data-bijzli-gate="true"] .natInput{border-radius:14px}',
+    'html[data-bijzli-gate="true"] .gate-palette-toggle{display:none}',
+    '@media (max-width:640px){html[data-bijzli-gate="true"] .gate-palette-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}html[data-bijzli-gate="true"] .gate-sidebar{position:fixed!important;top:0;right:0;bottom:0;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-gate="true"] body.gate-palette-open .gate-sidebar{transform:none}}',    // Mobile: collapse the header to timer + submit only; theme/buttons
+    // hidden, title single-line, tabs in one scrollable row.
+    '@media (max-width:640px){html[data-bijzli-gate="true"] .gate-header{padding:10px 12px}'
+    + 'html[data-bijzli-gate="true"] .gate-exam-title{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + 'html[data-bijzli-gate="true"] .gate-exam-subtitle{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-header-top{gap:8px}'
+    + 'html[data-bijzli-gate="true"] .gate-theme-switch{display:none}'
+    + 'html[data-bijzli-gate="true"] #gatePauseBtn{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-header-right{gap:8px;flex-wrap:nowrap}'
+    + 'html[data-bijzli-gate="true"] .gate-timer-box{min-width:88px;padding:6px 8px}'
+    + 'html[data-bijzli-gate="true"] .gate-timer-label{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-timer-time{font-size:17px}'
+    + 'html[data-bijzli-gate="true"] .gate-header-btn{width:auto!important;padding:8px 12px;font-size:13px}'
+    + 'html[data-bijzli-gate="true"] .gate-section-nav{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}'
+    + 'html[data-bijzli-gate="true"] .gate-section-nav::-webkit-scrollbar{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-section-tab{flex:0 0 auto;padding:7px 10px;font-size:12px}'
+    + 'html[data-bijzli-gate="true"] .gate-layout{display:flex;flex-direction:column}'
+    + 'html[data-bijzli-gate="true"] .gate-question-area{order:-1}'
+    + 'html[data-bijzli-gate="true"] .gate-sidebar{position:static;max-height:none}'
+    + 'html[data-bijzli-gate="true"] .gate-q-info{grid-template-columns:repeat(2,minmax(0,1fr))}'
+    + 'html[data-bijzli-gate="true"] .qcard{padding:16px!important}'
+    + 'html[data-bijzli-gate="true"] label.opt{padding:12px 14px}'
+    + 'html[data-bijzli-gate="true"] .gate-nav-bar{grid-template-columns:repeat(2,minmax(0,1fr));bottom:8px}'
+    + '}'
   ];
 
   const gateUiInject = [
@@ -442,6 +480,41 @@ export function patchDummy(js) {
   patched = patched.replace(
     "  injectStyles();",
     "  injectStyles();\n" + gateUiInject.replace("GATE_UI_CSS_PLACEHOLDER", JSON.stringify(gateUiCss.join("")))
+  );
+
+  const hamLines = [
+    '  (() => {',
+    '    const header = document.querySelector(".gate-header");',
+    '    if (!header) return;',
+    '    try {',
+    '      if (window.matchMedia("(max-width:640px)").matches) {',
+    '        const aside = document.querySelector(".gate-sidebar");',
+    '        const right = header.querySelector(".gate-header-right");',
+    '        const nav = header.querySelector("#gateSectionNav");',
+    '        const strip = header.querySelector("#gateResultStrip");',
+    '        const fabStack = right ? right.querySelector(".bijzli-calc-header-stack") : null;',
+    '        if (fabStack) fabStack.remove();',
+    '        if (aside && nav) aside.prepend(nav);',
+    '        if (aside && right) aside.prepend(right);',
+    '        if (aside && strip) aside.prepend(strip);',
+    '        if (fabStack) header.appendChild(fabStack);',
+    '      }',
+    '    } catch (_) {}',
+    '    const btn = document.createElement("button");',
+    '    btn.type = "button";',
+    '    btn.className = "gate-palette-toggle";',
+    '    btn.textContent = "☰ Questions";',
+    '    btn.setAttribute("aria-label", "Toggle question palette");',
+    '    btn.addEventListener("click", () => document.body.classList.toggle("gate-palette-open"));',
+    '    header.appendChild(btn);',
+    '    document.querySelector(".gate-sidebar")?.addEventListener("click", (event) => {',
+    '      if (event.target.closest(".gate-palette-btn")) document.body.classList.remove("gate-palette-open");',
+    '    });',
+    '  })();'
+  ];
+  patched = patched.replace(
+    '  buildUI(state);\n  applyTheme(state, loadTheme());',
+    ['  buildUI(state);', hamLines.join('\n'), '  applyTheme(state, loadTheme());'].join('\n')
   );
 
   const injected = `  if (savedProgress) gateApplyProgress(state, savedProgress);
@@ -494,7 +567,7 @@ export function cleanPaperVercel(html, paperPath) {
         : ref.includes("made-easy")
           ? "made-easy-dummy.js"
           : "progress.js";
-      return `${attr}=${quote}/assets/${name}?v=20261105-ui${quote}`;
+      return `${attr}=${quote}/assets/${name}?v=20261105-ui4${quote}`;
     }
   );
 
@@ -512,7 +585,7 @@ export function cleanPaperVercel(html, paperPath) {
     .replace(/<script[^>]*src=["']\/\.netlify\/scripts\/hud[^>]*>\s*<\/script>/gi, "")
     .replace(
       "</head>",
-      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
+      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}@media (max-width:640px){html[data-bijzli-classes] .test-layout{display:flex;flex-direction:column}html[data-bijzli-classes] .right-panel{order:-1}html[data-bijzli-classes] .top-toolbar{gap:10px}html[data-bijzli-classes] .action-row{display:grid;grid-template-columns:1fr 1fr}html[data-bijzli-classes] .action-row .btn{width:100%}html[data-bijzli-classes] .timer-pill{padding:8px 10px;font-size:12px}html[data-bijzli-classes] .theme-toggle-btn{display:none}html[data-bijzli-classes] #pause-timer-btn{display:none}html[data-bijzli-classes] .timer-pill span{display:none}}.classes-palette-toggle{display:none}@media (max-width:640px){html[data-bijzli-classes] .classes-palette-toggle{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:1700;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.45)}html[data-bijzli-classes] .left-panel{position:fixed!important;top:0;right:0;bottom:0;animation:none!important;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-classes] body.classes-palette-open .left-panel{transform:none}}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
     )
     .replace("</body>", `${hostBridge(paperPath)}</body>`);
 }

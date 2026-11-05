@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { createReadStream } from "node:fs";
-import { readFile, stat } from "node:fs/promises";
-import { extname, join, resolve, sep } from "node:path";
+import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
+import { dirname, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(fileURLToPath(new URL("./dist", import.meta.url)));
@@ -75,6 +75,19 @@ function hostBridge(paperPath) {
   const nativeGetItem = Storage.prototype.getItem;
   window.__BIJZLI_PAPER__ = PAPER_PATH;
   try { localStorage.setItem("test-ui-theme", "dark"); } catch (_) {}
+  if (document.querySelector(".left-panel")) {
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "classes-palette-toggle";
+    toggle.textContent = "☰ Questions";
+    toggle.setAttribute("aria-label", "Toggle question palette");
+    toggle.addEventListener("click", () => document.body.classList.toggle("classes-palette-open"));
+    document.body.appendChild(toggle);
+    document.querySelector(".left-panel").addEventListener("click", (event) => {
+      if (event.target.closest("button")) document.body.classList.remove("classes-palette-open");
+    });
+  }
+
 
   const finite = (value, fallback = 0) => {
     const number = Number(value);
@@ -478,7 +491,32 @@ function patchDummy(js) {
     'html[data-bijzli-gate="true"] .gate-palette-btn.answered,html[data-bijzli-gate="true"] .gate-legend-dot.answered{background:#065f46;border-color:rgba(255,255,255,.08);color:#a7f3d0}',
     'html[data-bijzli-gate="true"] .gate-palette-btn.marked,html[data-bijzli-gate="true"] .gate-legend-dot.marked{background:#4c1d95;border-color:rgba(255,255,255,.08);color:#ddd6fe}',
     'html[data-bijzli-gate="true"] .gate-palette-btn.answered-marked,html[data-bijzli-gate="true"] .gate-legend-dot.answered-marked{background:#92400e;border-color:rgba(255,255,255,.08);color:#fde68a}',
-    'html[data-bijzli-gate="true"] .natInput{border-radius:14px}'
+    'html[data-bijzli-gate="true"] .natInput{border-radius:14px}',
+    'html[data-bijzli-gate="true"] .gate-palette-toggle{display:none}',
+    '@media (max-width:640px){html[data-bijzli-gate="true"] .gate-palette-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}html[data-bijzli-gate="true"] .gate-sidebar{position:fixed!important;top:0;right:0;bottom:0;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-gate="true"] body.gate-palette-open .gate-sidebar{transform:none}}',    // Mobile: collapse the header to timer + submit only; theme/buttons
+    // hidden, title single-line, tabs in one scrollable row.
+    '@media (max-width:640px){html[data-bijzli-gate="true"] .gate-header{padding:10px 12px}'
+    + 'html[data-bijzli-gate="true"] .gate-exam-title{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + 'html[data-bijzli-gate="true"] .gate-exam-subtitle{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-header-top{gap:8px}'
+    + 'html[data-bijzli-gate="true"] .gate-theme-switch{display:none}'
+    + 'html[data-bijzli-gate="true"] #gatePauseBtn{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-header-right{gap:8px;flex-wrap:nowrap}'
+    + 'html[data-bijzli-gate="true"] .gate-timer-box{min-width:88px;padding:6px 8px}'
+    + 'html[data-bijzli-gate="true"] .gate-timer-label{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-timer-time{font-size:17px}'
+    + 'html[data-bijzli-gate="true"] .gate-header-btn{width:auto!important;padding:8px 12px;font-size:13px}'
+    + 'html[data-bijzli-gate="true"] .gate-section-nav{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}'
+    + 'html[data-bijzli-gate="true"] .gate-section-nav::-webkit-scrollbar{display:none}'
+    + 'html[data-bijzli-gate="true"] .gate-section-tab{flex:0 0 auto;padding:7px 10px;font-size:12px}'
+    + 'html[data-bijzli-gate="true"] .gate-layout{display:flex;flex-direction:column}'
+    + 'html[data-bijzli-gate="true"] .gate-question-area{order:-1}'
+    + 'html[data-bijzli-gate="true"] .gate-sidebar{position:static;max-height:none}'
+    + 'html[data-bijzli-gate="true"] .gate-q-info{grid-template-columns:repeat(2,minmax(0,1fr))}'
+    + 'html[data-bijzli-gate="true"] .qcard{padding:16px!important}'
+    + 'html[data-bijzli-gate="true"] label.opt{padding:12px 14px}'
+    + 'html[data-bijzli-gate="true"] .gate-nav-bar{grid-template-columns:repeat(2,minmax(0,1fr));bottom:8px}'
+    + '}'
   ];
 
   const gateUiInject = [
@@ -490,6 +528,41 @@ function patchDummy(js) {
   patched = patched.replace(
     "  injectStyles();",
     "  injectStyles();\n" + gateUiInject.replace("GATE_UI_CSS_PLACEHOLDER", JSON.stringify(gateUiCss.join("")))
+  );
+
+  const hamLines = [
+    '  (() => {',
+    '    const header = document.querySelector(".gate-header");',
+    '    if (!header) return;',
+    '    try {',
+    '      if (window.matchMedia("(max-width:640px)").matches) {',
+    '        const aside = document.querySelector(".gate-sidebar");',
+    '        const right = header.querySelector(".gate-header-right");',
+    '        const nav = header.querySelector("#gateSectionNav");',
+    '        const strip = header.querySelector("#gateResultStrip");',
+    '        const fabStack = right ? right.querySelector(".bijzli-calc-header-stack") : null;',
+    '        if (fabStack) fabStack.remove();',
+    '        if (aside && nav) aside.prepend(nav);',
+    '        if (aside && right) aside.prepend(right);',
+    '        if (aside && strip) aside.prepend(strip);',
+    '        if (fabStack) header.appendChild(fabStack);',
+    '      }',
+    '    } catch (_) {}',
+    '    const btn = document.createElement("button");',
+    '    btn.type = "button";',
+    '    btn.className = "gate-palette-toggle";',
+    '    btn.textContent = "☰ Questions";',
+    '    btn.setAttribute("aria-label", "Toggle question palette");',
+    '    btn.addEventListener("click", () => document.body.classList.toggle("gate-palette-open"));',
+    '    header.appendChild(btn);',
+    '    document.querySelector(".gate-sidebar")?.addEventListener("click", (event) => {',
+    '      if (event.target.closest(".gate-palette-btn")) document.body.classList.remove("gate-palette-open");',
+    '    });',
+    '  })();'
+  ];
+  patched = patched.replace(
+    '  buildUI(state);\n  applyTheme(state, loadTheme());',
+    ['  buildUI(state);', hamLines.join('\n'), '  applyTheme(state, loadTheme());'].join('\n')
   );
 
   const injected = `  if (savedProgress) gateApplyProgress(state, savedProgress);
@@ -564,7 +637,7 @@ function cleanPaper(html, paperPath) {
     (match, attr, quote, ref) => {
       const absolute = toAbsolute(ref);
       if (/^\/library\/assets\/(made-easy-dummy|progress|calculator)\.js/.test(absolute)) {
-        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui${quote}`;
+        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui4${quote}`;
       }
       return `${attr}=${quote}${absolute}${quote}`;
     }
@@ -589,7 +662,7 @@ function cleanPaper(html, paperPath) {
     .replace(/<script[^>]*src=["']\/\.netlify\/scripts\/hud[^>]*>\s*<\/script>/gi, "")
     .replace(
       "</head>",
-      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
+      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}@media (max-width:640px){html[data-bijzli-classes] .test-layout{display:flex;flex-direction:column}html[data-bijzli-classes] .right-panel{order:-1}html[data-bijzli-classes] .top-toolbar{gap:10px}html[data-bijzli-classes] .action-row{display:grid;grid-template-columns:1fr 1fr}html[data-bijzli-classes] .action-row .btn{width:100%}html[data-bijzli-classes] .timer-pill{padding:8px 10px;font-size:12px}html[data-bijzli-classes] .theme-toggle-btn{display:none}html[data-bijzli-classes] #pause-timer-btn{display:none}html[data-bijzli-classes] .timer-pill span{display:none}}.classes-palette-toggle{display:none}@media (max-width:640px){html[data-bijzli-classes] .classes-palette-toggle{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:1700;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.45)}html[data-bijzli-classes] .left-panel{position:fixed!important;top:0;right:0;bottom:0;animation:none!important;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-classes] body.classes-palette-open .left-panel{transform:none}}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
     )
     .replace("</body>", `${hostBridge(paperPath)}</body>`);
 }
@@ -679,12 +752,344 @@ async function servePaper(url, res) {
   send(res, 200, html, "text/html; charset=utf-8", "no-cache");
 }
 
+
+// ---------------------------------------------------------------------------
+// Custom tests: pick a branch + subjects, get a fresh exam built from random
+// questions of the matching local papers (GATE-engine .qcard papers only).
+// The generated paper reuses the CE 2026 template, so timer, palette,
+// submit and review all work out of the box.
+// ---------------------------------------------------------------------------
+
+const CUSTOM_DIR = join(LIBRARY, "CUSTOM");
+const CUSTOM_REGISTRY = fileURLToPath(new URL("./data/custom-tests.json", import.meta.url));
+const MANIFEST_FILE = fileURLToPath(new URL("./src/data/series-manifest.json", import.meta.url));
+const CUSTOM_TEMPLATE =
+  join(LIBRARY, "CIVIL ENGINEERING", "MADE EASY", "GATE 2026 + ESE 2026 Online Test Series - Civil Engineering", "001_Advance Level Test-1 Full Syllabus GATE 2026 CE.html");
+const SECONDS_PER_QUESTION = 170;
+const branchIndexCache = new Map();
+
+async function loadCustomRegistry() {
+  try {
+    const parsed = JSON.parse(await readFile(CUSTOM_REGISTRY, "utf8"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveCustomRegistry(entries) {
+  await mkdir(dirname(CUSTOM_REGISTRY), { recursive: true });
+  await writeFile(CUSTOM_REGISTRY, JSON.stringify(entries, null, 2) + "\n");
+}
+
+function tidyTitleText(text) {
+  return String(text ?? "").replace(/_/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function subjectFromTitle(title) {
+  const cleaned = tidyTitleText(title);
+  if (cleaned.includes("|")) {
+    const parts = cleaned.split("|").map((part) => part.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const segment = parts[1].replace(/\s*(Topic|Subject).*/i, "").trim();
+      if (segment && !/^(GATE|ESE)\b/i.test(segment)) return segment;
+    }
+  }
+  // "Subjectwise Test-1 Part Syllabus GATE 2025 EE Electric Circuit" -> "Electric Circuit"
+  const match = cleaned.match(/(?:Subjectwise|Topicwise)\s*Test-\d+\s*Part Syllabus\s*(?:GATE|ESE)\s*20\d{2}\s*\S+\s+(.+)$/i);
+  return match ? match[1].trim() : null;
+}
+
+function countQcards(html) {
+  const matches = String(html || "").match(/<section class="card qcard"/g);
+  return matches ? matches.length : 0;
+}
+
+async function paperQcardCount(path) {
+  const file = resolveFile(LIBRARY, path);
+  if (!file) return 0;
+  const info = await stat(file).catch(() => null);
+  if (!info?.isFile() || info.size === 0) return 0;
+  const head = await readFile(file, "utf8").catch(() => "");
+  return head.includes('<section class="card qcard"') ? countQcards(head) : 0;
+}
+
+async function branchIndex(branchName) {
+  const key = String(branchName || "").toLowerCase();
+  if (branchIndexCache.has(key)) return branchIndexCache.get(key);
+
+  const manifest = JSON.parse(await readFile(MANIFEST_FILE, "utf8"));
+  const branch = (manifest.branches || []).find((item) => item.name.toLowerCase() === key);
+  if (!branch) throw new Error("Unknown branch");
+
+  const tests = [];
+  for (const provider of branch.providers || []) {
+    for (const series of provider.series || []) {
+      for (const test of series.tests || []) {
+        tests.push({ path: test.path, title: test.title, subject: subjectFromTitle(test.title) });
+      }
+    }
+  }
+
+  const subjectMap = new Map();
+  const normalizeSubject = (name) =>
+    String(name || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s*\(?part-?\d+\)?$/i, "")
+      .replace(/[\s_-]*\d+$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  const addSubject = (name, path) => {
+    const normalized = normalizeSubject(name);
+    if (!normalized || normalized === "mixed subjects" || normalized === "mock gate" || normalized === "general aptitude") return;
+    if (!subjectMap.has(normalized)) subjectMap.set(normalized, { name: String(name).trim(), papers: new Set() });
+    subjectMap.get(normalized).papers.add(path);
+    // Prefer the canonical display name (no "-1"/"Part-2" suffixes).
+    const existing = subjectMap.get(normalized);
+    if (/\d\s*$/.test(existing.name) && !/\d\s*$/.test(String(name).trim())) {
+      existing.name = String(name).trim();
+    }
+  };
+
+  for (const test of tests) {
+    if (test.subject) addSubject(test.subject, test.path);
+  }
+
+  // Question counts per subject + General Aptitude pool (reads are cached
+  // in memory per branch for the process lifetime).
+  // Merge singular/plural variants (e.g. Database vs Databases).
+  for (const [key, entry] of [...subjectMap]) {
+    if (!subjectMap.has(key)) continue; // already merged away
+    const alt = key.endsWith("s") ? key.slice(0, -1) : `${key}s`;
+    if (subjectMap.has(alt) && alt !== key) {
+      const other = subjectMap.get(alt);
+      for (const paper of other.papers) entry.papers.add(paper);
+      if (!/s$/.test(entry.name) && /s$/.test(other.name)) entry.name = other.name;
+      subjectMap.delete(alt);
+    }
+  }
+
+  const subjectList = [];
+  for (const entry of subjectMap.values()) {
+    let questions = 0;
+    for (const path of entry.papers) questions += await paperQcardCount(path);
+    if (questions > 0) subjectList.push({ name: entry.name, papers: entry.papers.size, questions });
+  }
+  subjectList.sort((a, b) => b.questions - a.questions);
+
+  let gaQuestions = 0;
+  for (const test of tests) {
+    const file = resolveFile(LIBRARY, test.path);
+    if (!file) continue;
+    const info = await stat(file).catch(() => null);
+    if (!info?.isFile()) continue;
+    const html = await readFile(file, "utf8").catch(() => "");
+    if (!html.includes('<section class="card qcard"')) continue;
+    const gaMatches = html.match(/<div class="tags">\s*General Aptitude/g);
+    if (gaMatches) gaQuestions += gaMatches.length;
+  }
+
+  const index = {
+    branch: branch.name,
+    tests,
+    subjects: [
+      { name: "General Aptitude", papers: tests.length, questions: gaQuestions },
+      ...subjectList
+    ]
+  };
+  branchIndexCache.set(key, index);
+  return index;
+}
+
+function extractCards(html) {
+  const cards = [];
+  const pattern = /<section class="card qcard"[\s\S]*?<\/section>/g;
+  let match;
+  while ((match = pattern.exec(String(html || "")))) cards.push(match[0]);
+  return cards;
+}
+
+function renumberCard(card, n) {
+  return String(card)
+    .replace(/data-qnum="\d+"/, `data-qnum="${n}"`)
+    .replace(/id="q\d+"/, `id="q${n}"`)
+    .replace(/name="q\d+"/g, `name="q${n}"`)
+    .replace(/(>Q)\d+(\s*<)/, `$1${n}$2`);
+}
+
+function shuffle(items) {
+  const out = items.slice();
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function sanitizeCustomName(raw, index) {
+  const cleaned = tidyTitleText(raw || "")
+    .replace(/[^a-zA-Z0-9\s-]/g, "")
+    .slice(0, 60)
+    .trim();
+  return cleaned || `Custom Test ${index}`;
+}
+
+async function generateCustomTest({ branch, subjects, count, name }) {
+  const index = await branchIndex(branch);
+  const wanted = Array.isArray(subjects) ? subjects.map((s) => String(s || "").trim().toLowerCase()).filter(Boolean) : [];
+  if (!wanted.length) throw new Error("Select at least one subject");
+  const total = Math.max(1, Math.min(100, Math.floor(Number(count) || 30)));
+
+  const pools = [];
+  for (const subjectName of wanted) {
+    const subject = index.subjects.find((s) => s.name.toLowerCase() === subjectName);
+    if (!subject) throw new Error(`Unknown subject: ${subjectName}`);
+    const isGA = subjectName === "general aptitude";
+    const papers = isGA
+      ? index.tests.map((t) => t.path)
+      : index.tests.filter((t) => {
+          const title = t.title.toLowerCase();
+          return title.includes(subjectName);
+        }).map((t) => t.path);
+    const unique = [...new Set(papers)];
+    pools.push({ subject: subject.name, isGA, papers: unique });
+  }
+
+  const picked = [];
+  const pickedKeys = new Set();
+  const quotas = pools.map((pool, i) =>
+    Math.max(1, Math.floor((total * (pool.papers.length || 1)) / pools.reduce((sum, p) => sum + (p.papers.length || 1), 0)))
+  );
+  const attempts = Math.max(total * 40, 400);
+
+  for (let attempt = 0; attempt < attempts && picked.length < total; attempt += 1) {
+    const poolIndex = attempt % pools.length;
+    const pool = pools[poolIndex];
+    const poolPicked = picked.filter((item) => item.pool === poolIndex).length;
+    if (poolPicked >= quotas[poolIndex] && attempt < total) continue;
+    if (!pool.papers.length) continue;
+    const path = pool.papers[Math.floor(Math.random() * pool.papers.length)];
+    const file = resolveFile(LIBRARY, path);
+    if (!file) continue;
+    const html = await readFile(file, "utf8").catch(() => "");
+    if (!html.includes('<section class="card qcard"')) continue;
+    const cards = shuffle(
+      extractCards(html).filter((card) => {
+        const isGA = /<div class="tags">\s*General Aptitude/.test(card);
+        return pool.isGA ? isGA : !isGA;
+      })
+    );
+    if (!cards.length) continue;
+    const card = cards[0];
+    const key = `${path}::${card.slice(0, 400)}`;
+    if (pickedKeys.has(key)) continue;
+    pickedKeys.add(key);
+    picked.push({ pool: poolIndex, card });
+  }
+
+  if (!picked.length) throw new Error("No matching questions found in the local papers");
+
+  const template = await readFile(CUSTOM_TEMPLATE, "utf8");
+  const cardPattern = /<section class="card qcard"[\s\S]*?<\/section>/g;
+  const templateCards = [...template.matchAll(cardPattern)];
+  if (!templateCards.length) throw new Error("Custom template unavailable");
+
+  const testName = sanitizeCustomName(name, 1);
+  const durationSec = picked.length * SECONDS_PER_QUESTION;
+  const sectionsLabel = [...new Set(pools.map((p) => p.subject))].join(", ");
+  const generated = picked.map((item, i) => renumberCard(item.card, i + 1)).join("\n");
+
+  let html = template;
+  const firstStart = templateCards[0].index;
+  const lastEnd = templateCards[templateCards.length - 1].index + templateCards[templateCards.length - 1][0].length;
+  html = html.slice(0, firstStart) + generated + "\n" + html.slice(lastEnd);
+  html = html.replace(/<title>[^<]*<\/title>/, `<title>Custom Test — ${testName}</title>`);
+  html = html.replace(/(<h1>)[^<]*(<\/h1>)/, `$1Custom Test — ${testName}$2`);
+  html = html.replace(/Package: [^<]*/, `Custom test • ${index.branch} • ${sectionsLabel} • ${picked.length} Questions`);
+  html = html.replace(/data-duration="\d+"/, `data-duration="${durationSec}"`);
+
+  const branchSlug = index.branch.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "custom";
+  const slug = testName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `custom-${Date.now()}`;
+  const relativePath = `CUSTOM/${branchSlug}/custom-${slug}-${Date.now()}.html`;
+  const outFile = resolveFile(LIBRARY, relativePath);
+  if (!outFile) throw new Error("Unsafe custom path");
+  await mkdir(dirname(outFile), { recursive: true });
+  await writeFile(outFile, html);
+
+  const entry = {
+    name: testName,
+    path: relativePath,
+    branch: index.branch,
+    subjects: [...new Set(pools.map((p) => p.subject))],
+    questions: picked.length,
+    durationSec,
+    createdAt: new Date().toISOString()
+  };
+  const registry = await loadCustomRegistry();
+  registry.push(entry);
+  await saveCustomRegistry(registry.slice(-50));
+  return entry;
+}
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
 
   try {
     if (url.pathname === "/paper") {
       await servePaper(url, res);
+      return;
+    }
+
+    if (url.pathname === "/custom/meta") {
+      const branch = url.searchParams.get("branch") || "";
+      const manifest = JSON.parse(await readFile(MANIFEST_FILE, "utf8"));
+      const branches = (manifest.branches || []).map((item) => ({ name: item.name, testCount: item.testCount || 0 }));
+      if (!branch) {
+        const meta = { branches };
+        res.setHeader("content-type", "application/json; charset=utf-8");
+        res.setHeader("cache-control", "no-cache");
+        res.end(JSON.stringify(meta));
+        return;
+      }
+      const index = await branchIndex(branch);
+      const meta = {
+        branch: index.branch,
+        subjects: index.subjects.map((subject) => ({
+          name: subject.name,
+          papers: subject.papers,
+          questions: subject.questions
+        }))
+      };
+      res.setHeader("content-type", "application/json; charset=utf-8");
+      res.setHeader("cache-control", "no-cache");
+      res.end(JSON.stringify(meta));
+      return;
+    }
+
+    if (url.pathname === "/custom/list") {
+      const entries = await loadCustomRegistry();
+      res.setHeader("content-type", "application/json; charset=utf-8");
+      res.setHeader("cache-control", "no-cache");
+      res.end(JSON.stringify({ tests: entries }));
+      return;
+    }
+
+    if (url.pathname === "/custom/generate" && req.method === "POST") {
+      let raw = "";
+      req.on("data", (chunk) => { raw += chunk; if (raw.length > 65536) req.destroy(); });
+      await new Promise((resolve) => req.on("end", resolve));
+      try {
+        const body = JSON.parse(raw || "{}");
+        const entry = await generateCustomTest(body);
+        res.setHeader("content-type", "application/json; charset=utf-8");
+        res.setHeader("cache-control", "no-cache");
+        res.end(JSON.stringify({ ok: true, entry }));
+      } catch (error) {
+        res.setHeader("content-type", "application/json; charset=utf-8");
+        res.statusCode = 400;
+        res.end(JSON.stringify({ ok: false, error: error.message || "Could not generate the test" }));
+      }
       return;
     }
 
