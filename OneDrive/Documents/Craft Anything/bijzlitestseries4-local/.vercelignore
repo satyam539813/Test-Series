@@ -2,7 +2,6 @@
 # by the /paper serverless function instead (papers are fetched live upstream).
 library/
 node_modules/
-data/
 tools/
 *.log
 README.md

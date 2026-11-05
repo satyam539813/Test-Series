@@ -11,5 +11,20 @@
     "questions": 20,
     "durationSec": 3400,
     "createdAt": "2026-11-05T07:31:13.369Z"
+  },
+  {
+    "name": "Custom Test 1",
+    "path": "CUSTOM/computer-science-engineering/custom-custom-test-1-1793863953977.html",
+    "branch": "COMPUTER SCIENCE ENGINEERING",
+    "subjects": [
+      "General Aptitude",
+      "Theory of Computation",
+      "Algorithms",
+      "Programming and Data Structures",
+      "Computer Networks"
+    ],
+    "questions": 30,
+    "durationSec": 5100,
+    "createdAt": "2026-11-05T07:32:33.984Z"
   }
 ]
