@@ -432,41 +432,55 @@ function patchDummy(js) {
     '} catch (error) {\n      return "bright";\n    }\n    return "bright";',
     '} catch (error) {\n      return "dark";\n    }\n    return "dark";'
   );
+  patched = patched.replace(
+    'if (stored === "bright" || stored === "dark" || stored === "green") return stored;',
+    'if (stored === "dark") return stored;'
+  );
 
   // Improved exam UI (dark violet theme matching the library app). Appended
   // after the engine's own styles so it wins on equal specificity.
   const gateUiCss = [
-    'html[data-bijzli-gate="true"] body[data-theme="bright"]{--b:#7c6cf0;--b2:#5b4bc4;--g:#059669;--r:#dc2626;--o:#d97706;--p:#7c6cf0;--head:linear-gradient(135deg,#101014 0%,#1a1b22 60%,#1d1c28 100%);--sub:#f5f5f7;--bg:#f4f4f6;--card:#ffffff;--chip:#f1f1f4;--hover:#eceaf5;--border:#e2e2e8;--text:#17122b;--muted:#6b6b76;--ring:rgba(124,108,240,.3)}',
-    'html[data-bijzli-gate="true"] body[data-theme="dark"]{--b:#a78bfa;--b2:#c4b5fd;--g:#34d399;--r:#f87171;--o:#fbbf24;--p:#a78bfa;--head:linear-gradient(135deg,#0d0d10 0%,#17181f 60%,#1d1c28 100%);--sub:#0d0d10;--bg:#0a0a0d;--card:#14151a;--chip:#1a1b22;--hover:#22232c;--border:rgba(255,255,255,.08);--text:#f2f2f5;--muted:#a1a1aa;--ring:rgba(167,139,250,.35)}',
-    'html[data-bijzli-gate="true"] body[data-theme="green"]{--b:#34d399;--b2:#6ee7b7;--g:#34d399;--r:#f87171;--o:#fbbf24;--p:#34d399;--head:linear-gradient(135deg,#08120d 0%,#0f1f16 60%,#12291c 100%);--sub:#0a120d;--bg:#0a0f0c;--card:#111812;--chip:#182118;--hover:#1e2a20;--border:rgba(255,255,255,.08);--text:#ecfdf5;--muted:#9fb8aa;--ring:rgba(52,211,153,.3)}',
+    'html[data-bijzli-gate="true"] body[data-theme="bright"]{--b:#2563eb;--b2:#1d4ed8;--g:#059669;--r:#dc2626;--o:#d97706;--p:#2563eb;--head:#14151a;--sub:#f5f5f7;--bg:#f4f4f6;--card:#ffffff;--chip:#f1f1f4;--hover:#ececee;--border:#e2e2e8;--text:#17122b;--muted:#6b6b76;--ring:rgba(37,99,235,.25)}',
+    'html[data-bijzli-gate="true"] body[data-theme="dark"]{--b:#e4e4e7;--b2:#d4d4d8;--g:#34d399;--r:#f87171;--o:#fbbf24;--p:#e4e4e7;--head:#14151a;--sub:#0a0a0d;--bg:#0a0a0d;--card:#14151a;--chip:#1a1b22;--hover:#22232c;--border:rgba(255,255,255,.07);--text:#f2f2f5;--muted:#a1a1aa;--ring:rgba(255,255,255,.18)}',
+    'html[data-bijzli-gate="true"] body[data-theme="green"]{--b:#34d399;--b2:#6ee7b7;--g:#34d399;--r:#f87171;--o:#fbbf24;--p:#34d399;--head:#101512;--sub:#0a0f0c;--bg:#0a0f0c;--card:#111812;--chip:#182118;--hover:#1e2a20;--border:rgba(255,255,255,.07);--text:#ecfdf5;--muted:#9fb8aa;--ring:rgba(52,211,153,.25)}',
     'html[data-bijzli-gate="true"] body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}',
+    'html[data-bijzli-gate="true"] body[data-theme="dark"]{background:#0a0a0d}',
+    'html[data-bijzli-gate="true"] body[data-theme="green"]{background:#0a0f0c}',
     'html[data-bijzli-gate="true"] body::before{display:none}',
-    'html[data-bijzli-gate="true"] .gate-header{background:var(--head);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(0,0,0,.35);padding:12px 16px;color:#fff}',
+    'html[data-bijzli-gate="true"] .gate-header{background:#14151a;border-bottom:1px solid rgba(255,255,255,.08);box-shadow:none;padding:12px 16px;color:#f2f2f5}',
     'html[data-bijzli-gate="true"] .gate-logo-area{display:none!important}',
     'html[data-bijzli-gate="true"] .gate-header-center{text-align:left;flex:1 1 auto}',
     'html[data-bijzli-gate="true"] .gate-exam-title{font-size:17px;letter-spacing:-.01em}',
-    'html[data-bijzli-gate="true"] .gate-exam-subtitle{color:rgba(255,255,255,.62)}',
-    'html[data-bijzli-gate="true"] .gate-theme-switch{border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}',
-    'html[data-bijzli-gate="true"] .gate-theme-btn{border-radius:999px}',
+    'html[data-bijzli-gate="true"] .gate-exam-subtitle{color:#a1a1aa}',
+    'html[data-bijzli-gate="true"] .gate-theme-switch{border-radius:999px;background:#1a1b22;border:1px solid rgba(255,255,255,.08)}',
+    'html[data-bijzli-gate="true"] .gate-theme-btn{border-radius:999px;color:#a1a1aa}',
     'html[data-bijzli-gate="true"] .gate-theme-btn[aria-pressed="true"]{background:#e4e4e7;color:#101014}',
-    'html[data-bijzli-gate="true"] .gate-timer-box{border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}',
-    'html[data-bijzli-gate="true"] .gate-timer-time{color:#c4b5fd}',
+    'html[data-bijzli-gate="true"] .gate-timer-box{border-radius:14px;background:#101014;border:1px solid rgba(255,255,255,.08)}',
+    'html[data-bijzli-gate="true"] .gate-timer-label{color:#a1a1aa}',
+    'html[data-bijzli-gate="true"] .gate-timer-time{color:#f2f2f5}',
     'html[data-bijzli-gate="true"] .gate-header-btn{border-radius:999px;font-weight:700}',
-    'html[data-bijzli-gate="true"] .gate-header-btn.danger{background:linear-gradient(135deg,#c4b5fd,#a78bfa);color:#17122b;border-color:transparent;box-shadow:0 10px 28px rgba(139,124,246,.35)}',
-    'html[data-bijzli-gate="true"] .gate-header-btn.pause{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#fff}',
-    'html[data-bijzli-gate="true"] .gate-section-tab{border-radius:999px;background:rgba(255,255,255,.06)}',
+    'html[data-bijzli-gate="true"] .gate-header-btn.danger{background:#e4e4e7;color:#101014;border:1px solid transparent}',
+    'html[data-bijzli-gate="true"] .gate-header-btn.pause{background:transparent;color:#f2f2f5;border:1px solid rgba(255,255,255,.14)}',
+    'html[data-bijzli-gate="true"] .gate-section-tab{border-radius:999px;background:transparent;color:#a1a1aa}',
     'html[data-bijzli-gate="true"] .gate-section-tab.active{background:#e4e4e7;color:#101014}',
-    'html[data-bijzli-gate="true"] .gate-result-chip{border-radius:14px;background:rgba(255,255,255,.05)}',
-    'html[data-bijzli-gate="true"] .qcard,html[data-bijzli-gate="true"] .gate-side-card,html[data-bijzli-gate="true"] .gate-q-info,html[data-bijzli-gate="true"] .gate-review-panel,html[data-bijzli-gate="true"] .sm-modal{border-radius:20px}',
+    'html[data-bijzli-gate="true"] .gate-result-chip{border-radius:14px;background:#1a1b22;border:1px solid rgba(255,255,255,.06)}',
+    'html[data-bijzli-gate="true"] .qcard,html[data-bijzli-gate="true"] .gate-side-card,html[data-bijzli-gate="true"] .gate-q-info,html[data-bijzli-gate="true"] .gate-review-panel,html[data-bijzli-gate="true"] .sm-modal{border-radius:20px;box-shadow:none}',
     'html[data-bijzli-gate="true"] .gate-info-chip,html[data-bijzli-gate="true"] .gate-side-kpi,html[data-bijzli-gate="true"] .gate-review-kpi{border-radius:14px}',
     'html[data-bijzli-gate="true"] label.opt{border-radius:14px}',
-    'html[data-bijzli-gate="true"] label.opt:hover{transform:translateY(-1px)}',
+    'html[data-bijzli-gate="true"] label.opt:hover{border-color:rgba(255,255,255,.16)}',
     'html[data-bijzli-gate="true"] .gate-nav-btn{border-radius:999px;font-weight:700}',
-    'html[data-bijzli-gate="true"] .gate-nav-btn.primary{background:linear-gradient(135deg,#c4b5fd,#a78bfa);color:#17122b;border-color:transparent;box-shadow:0 10px 28px rgba(139,124,246,.35)}',
-    'html[data-bijzli-gate="true"] .gate-nav-bar{border-radius:20px;border:1px solid rgba(255,255,255,.08);box-shadow:0 20px 50px rgba(0,0,0,.45)}',
+    'html[data-bijzli-gate="true"] .gate-nav-btn.primary{background:#e4e4e7;color:#101014;border:1px solid transparent}',
+    'html[data-bijzli-gate="true"] .gate-nav-btn.secondary{background:transparent}',
+    'html[data-bijzli-gate="true"] .gate-nav-bar{border-radius:20px;background:#14151a;border:1px solid rgba(255,255,255,.08);box-shadow:none}',
     'html[data-bijzli-gate="true"] .gate-palette-btn{border-radius:10px}',
+    'html[data-bijzli-gate="true"] .gate-palette-btn.not-visited,html[data-bijzli-gate="true"] .gate-legend-dot.not-visited{background:#26272e;border-color:rgba(255,255,255,.08);color:#a1a1aa}',
+    'html[data-bijzli-gate="true"] .gate-palette-btn.not-answered,html[data-bijzli-gate="true"] .gate-legend-dot.not-answered{background:#7f1d1d;border-color:rgba(255,255,255,.08);color:#fecaca}',
+    'html[data-bijzli-gate="true"] .gate-palette-btn.answered,html[data-bijzli-gate="true"] .gate-legend-dot.answered{background:#065f46;border-color:rgba(255,255,255,.08);color:#a7f3d0}',
+    'html[data-bijzli-gate="true"] .gate-palette-btn.marked,html[data-bijzli-gate="true"] .gate-legend-dot.marked{background:#4c1d95;border-color:rgba(255,255,255,.08);color:#ddd6fe}',
+    'html[data-bijzli-gate="true"] .gate-palette-btn.answered-marked,html[data-bijzli-gate="true"] .gate-legend-dot.answered-marked{background:#92400e;border-color:rgba(255,255,255,.08);color:#fde68a}',
     'html[data-bijzli-gate="true"] .natInput{border-radius:14px}'
   ];
+
   const gateUiInject = [
     '  const gateUiStyle = document.createElement("style");',
     '  gateUiStyle.id = "gate-ui-overrides";',
@@ -519,6 +533,7 @@ function cleanPaper(html, paperPath) {
   // ../../../ext_media paths just like the 2027 JSON papers do.
   if (!/<base\b/i.test(cleaned)) {
     cleaned = cleaned.replace(/<head([^>]*)>/i, `<head$1><base href="${paperBase(paperPath)}">`);
+    cleaned = cleaned.replace(/<head([^>]*)>/i, `<head$1><script>try{localStorage.setItem("theme","dark");localStorage.setItem("bijzli-provider-theme","dark");localStorage.setItem("test-ui-theme","dark");}catch(e){}</script>`);
   }
 
   // Browsers may resolve static srcdoc resources against the embedding page
@@ -546,7 +561,13 @@ function cleanPaper(html, paperPath) {
   };
   cleaned = cleaned.replace(
     /\b(src|href|poster|data-src|data-href)=(["'])([^"']+)\2/gi,
-    (match, attr, quote, ref) => `${attr}=${quote}${toAbsolute(ref)}${quote}`
+    (match, attr, quote, ref) => {
+      const absolute = toAbsolute(ref);
+      if (/^\/library\/assets\/(made-easy-dummy|progress|calculator)\.js/.test(absolute)) {
+        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui${quote}`;
+      }
+      return `${attr}=${quote}${absolute}${quote}`;
+    }
   );
   cleaned = cleaned.replace(/\burl\(\s*(["']?)([^"')]+)\1\s*\)/gi, (match, quote, ref) => {
     const absolute = toAbsolute(ref);
