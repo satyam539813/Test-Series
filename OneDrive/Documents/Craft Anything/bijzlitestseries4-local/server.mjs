@@ -74,6 +74,7 @@ function hostBridge(paperPath) {
   const nativeSetItem = Storage.prototype.setItem;
   const nativeGetItem = Storage.prototype.getItem;
   window.__BIJZLI_PAPER__ = PAPER_PATH;
+  try { localStorage.setItem("test-ui-theme", "dark"); } catch (_) {}
 
   const finite = (value, fallback = 0) => {
     const number = Number(value);
@@ -427,6 +428,10 @@ function patchDummy(js) {
   );
   patched = patched.replace(/"DVRUO EASY \| Test Series"/g, '"Test Series"');
   patched = patched.replace(/"DVRUO EASY Test"/g, '"Test Series"');
+  patched = patched.replace(
+    '} catch (error) {\n      return "bright";\n    }\n    return "bright";',
+    '} catch (error) {\n      return "dark";\n    }\n    return "dark";'
+  );
 
   // Improved exam UI (dark violet theme matching the library app). Appended
   // after the engine's own styles so it wins on equal specificity.
@@ -563,7 +568,7 @@ function cleanPaper(html, paperPath) {
     .replace(/<script[^>]*src=["']\/\.netlify\/scripts\/hud[^>]*>\s*<\/script>/gi, "")
     .replace(
       "</head>",
-      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}</style></head>'
+      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
     )
     .replace("</body>", `${hostBridge(paperPath)}</body>`);
 }

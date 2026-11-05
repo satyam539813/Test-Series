@@ -114,21 +114,47 @@
       const frame = document.createElement("iframe");
       frame.title = paperPath.split("/").pop() || "Test paper";
       frame.style.visibility = "hidden";
+      let shown = false;
+      const reveal = () => {
+        if (shown) return;
+        shown = true;
+        loading.remove();
+        frame.style.visibility = "visible";
+      };
+      const fail = () => {
+        if (shown) return;
+        shown = true;
+        frame.remove();
+        loading.textContent = "Paper not found in the local library. Run npm run mirror to download it.";
+        loading.classList.add("error");
+      };
+      frame.addEventListener("load", () => {
+        try {
+          const doc = frame.contentDocument;
+          if (doc && doc.querySelector("#bijzli-host-style")) reveal();
+          else fail();
+        } catch (error) {
+          reveal();
+        }
+      });
+      frame.src = `paper?path=${encodeURIComponent(paperPath)}`;
       document.body.append(frame);
 
-      fetch(`paper?path=${encodeURIComponent(paperPath)}`)
-        .then((response) => (response.ok ? response.text() : Promise.reject(new Error("Paper unavailable"))))
-        .then((html) => {
-          if (!html.includes("bijzli-host-style")) throw new Error("Paper unavailable");
-          loading.remove();
-          frame.style.visibility = "visible";
-          frame.srcdoc = html;
-        })
-        .catch(() => {
-          frame.remove();
-          loading.textContent = "Paper not found in the local library. Run npm run mirror to download it.";
-          loading.classList.add("error");
-        });
+      // Reveal as soon as the patched paper starts rendering instead of
+      // waiting for the full load event (progressive parse).
+      const started = Date.now();
+      const check = () => {
+        if (shown) return;
+        try {
+          const doc = frame.contentDocument;
+          if (doc && doc.querySelector("#bijzli-host-style")) return reveal();
+        } catch (error) {
+          // Not ready yet.
+        }
+        if (Date.now() - started > 20000) return fail();
+        setTimeout(check, 50);
+      };
+      check();
     })();
   </script>
 </body>
