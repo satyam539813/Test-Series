@@ -859,6 +859,8 @@
 
     const card = el("a", "test-card");
     card.href = paper.href;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
     card.style.setProperty("--card-accent", paper.branch.accent);
 
     const group = testGroup(paper);
@@ -1182,7 +1184,7 @@
 
   function navigateToPaper(paper) {
     recordOpen(paper);
-    window.location.assign(paper.href);
+    window.open(paper.href, "_blank", "noopener");
   }
 
   function renderAnalytics(entries) {
@@ -1380,8 +1382,8 @@
     const card = el("a", "mini-card");
 
     card.href = paper.href;
-    card.removeAttribute("target");
-    card.removeAttribute("rel");
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
     card.style.setProperty("--card-accent", paper.branch.accent);
     card.appendChild(el("span", "mini-name", paper.title));
 
@@ -1725,7 +1727,7 @@
 
     refs.ctaResume.addEventListener("click", () => {
       const href = refs.ctaResume.dataset.href;
-      if (href) window.location.assign(href);
+      if (href) window.open(href, "_blank", "noopener");
     });
 
     window.addEventListener("hashchange", () => {

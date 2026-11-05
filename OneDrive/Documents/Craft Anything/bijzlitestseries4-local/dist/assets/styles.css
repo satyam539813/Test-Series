@@ -602,8 +602,8 @@ select {
 }
 
 .tab[aria-selected="true"] {
-  color: #17122b;
-  background: var(--gradient);
+  color: #101014;
+  background: #e4e4e7;
 }
 
 .tab-count {
@@ -617,7 +617,7 @@ select {
 }
 
 .tab[aria-selected="true"] .tab-count {
-  background: rgba(23, 18, 43, 0.15);
+  background: rgba(16, 16, 20, 0.12);
 }
 
 .activity-list {
@@ -878,8 +878,8 @@ select {
 }
 
 .crumb[aria-current="page"] {
-  color: #17122b;
-  background: var(--gradient);
+  color: #101014;
+  background: #e4e4e7;
   cursor: default;
 }
 
@@ -1114,8 +1114,8 @@ select {
 
 .chip.active {
   border-color: transparent;
-  background: var(--gradient);
-  color: #17122b;
+  background: #e4e4e7;
+  color: #101014;
 }
 
 .chip-sm {
