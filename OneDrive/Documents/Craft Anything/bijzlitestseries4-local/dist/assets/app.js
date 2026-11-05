@@ -853,6 +853,15 @@
     return fragment;
   }
 
+  const prefetched = new Set();
+  function prefetchPaper(paper) {
+    // Warm the paper endpoint on hover/focus so the new tab renders the exam
+    // almost instantly instead of flashing a loading screen.
+    if (!paper?.path || prefetched.has(paper.key)) return;
+    prefetched.add(paper.key);
+    fetch(`paper?path=${encodeURIComponent(paper.path)}`, { cache: "no-cache" }).catch(() => {});
+  }
+
   function testCard(paper, { showCrumb = false, tokens = [] } = {}) {
     const entry = entryFor(paper.key);
     const score = scoreOf(entry);
@@ -861,6 +870,8 @@
     card.href = paper.href;
     card.target = "_blank";
     card.rel = "noopener noreferrer";
+    card.addEventListener("mouseenter", () => prefetchPaper(paper), { once: true });
+    card.addEventListener("focus", () => prefetchPaper(paper), { once: true });
     card.style.setProperty("--card-accent", paper.branch.accent);
 
     const group = testGroup(paper);
@@ -1384,6 +1395,8 @@
     card.href = paper.href;
     card.target = "_blank";
     card.rel = "noopener noreferrer";
+    card.addEventListener("mouseenter", () => prefetchPaper(paper), { once: true });
+    card.addEventListener("focus", () => prefetchPaper(paper), { once: true });
     card.style.setProperty("--card-accent", paper.branch.accent);
     card.appendChild(el("span", "mini-name", paper.title));
 

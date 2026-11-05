@@ -18,11 +18,37 @@
     }
     #loading {
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
       padding: 24px;
       color: #a1a1aa;
       font-size: 0.9rem;
+      text-align: center;
     }
     #loading.error { color: #fca5a5; }
+    .loading-spinner {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 3px solid rgba(167,139,250,0.18);
+      border-top-color: #a78bfa;
+      animation: loading-spin 0.9s linear infinite;
+    }
+    .loading-name {
+      color: #f2f2f5;
+      font-weight: 650;
+      font-size: 1rem;
+      max-width: 44ch;
+      overflow-wrap: anywhere;
+    }
+    @keyframes loading-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .loading-spinner { animation: none; }
+    }
     iframe {
       position: fixed;
       inset: 0;
@@ -63,7 +89,7 @@
 </head>
 <body>
   <a class="back-library" href="index.html#/" title="Back to paper library">&larr; Library</a>
-  <p id="loading" role="status" aria-live="polite">Loading test&hellip;</p>
+  <p id="loading" role="status" aria-live="polite"><span class="loading-spinner" aria-hidden="true"></span><span class="loading-name">Loading test&hellip;</span></p>
   <script>
     (() => {
       const params = new URLSearchParams(location.search);
@@ -74,6 +100,15 @@
         loading.textContent = "Missing paper path.";
         loading.classList.add("error");
         return;
+      }
+
+      // Show the test name in the tab immediately while the paper loads.
+      const fileName = paperPath.split("/").pop() || "";
+      const prettyName = fileName.replace(/\.html?$/i, "").replace(/^\d+[_\s-]+/, "").replace(/_/g, " ").trim();
+      if (prettyName) {
+        document.title = prettyName;
+        const nameEl = loading.querySelector(".loading-name");
+        if (nameEl) nameEl.textContent = prettyName;
       }
 
       const frame = document.createElement("iframe");
