@@ -504,7 +504,6 @@ function patchDummy(js) {
     + 'html[data-bijzli-gate="true"] .gate-exam-subtitle{display:none}'
     + 'html[data-bijzli-gate="true"] .gate-header-top{gap:8px}'
     + 'html[data-bijzli-gate="true"] .gate-theme-switch{display:none}'
-    + 'html[data-bijzli-gate="true"] #gatePauseBtn{display:none}'
     + 'html[data-bijzli-gate="true"] .gate-header-right{gap:8px;flex-wrap:nowrap}'
     + 'html[data-bijzli-gate="true"] .gate-timer-box{min-width:88px;padding:6px 8px}'
     + 'html[data-bijzli-gate="true"] .gate-timer-label{display:none}'
@@ -541,14 +540,18 @@ function patchDummy(js) {
     '    try {',
     '      if (window.matchMedia("(max-width:640px)").matches) {',
     '        const aside = document.querySelector(".gate-sidebar");',
-    '        const right = header.querySelector(".gate-header-right");',
+    '        const theme = header.querySelector(".gate-theme-switch");',
+    '        const pause = header.querySelector("#gatePauseBtn");',
     '        const nav = header.querySelector("#gateSectionNav");',
     '        const strip = header.querySelector("#gateResultStrip");',
-    '        const fabStack = right ? right.querySelector(".bijzli-calc-header-stack") : null;',
+    '        const fabStack = header.querySelector(".bijzli-calc-header-stack");',
     '        if (fabStack) fabStack.remove();',
-    '        if (aside && nav) aside.prepend(nav);',
-    '        if (aside && right) aside.prepend(right);',
-    '        if (aside && strip) aside.prepend(strip);',
+    '        if (aside) {',
+    '          if (strip) aside.prepend(strip);',
+    '          if (nav) aside.prepend(nav);',
+    '          if (pause) aside.prepend(pause);',
+    '          if (theme) aside.prepend(theme);',
+    '        }',
     '        if (fabStack) header.appendChild(fabStack);',
     '      }',
     '    } catch (_) {}',
@@ -641,7 +644,7 @@ function cleanPaper(html, paperPath) {
     (match, attr, quote, ref) => {
       const absolute = toAbsolute(ref);
       if (/^\/library\/assets\/(made-easy-dummy|progress|calculator)\.js/.test(absolute)) {
-        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui7${quote}`;
+        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui8${quote}`;
       }
       return `${attr}=${quote}${absolute}${quote}`;
     }

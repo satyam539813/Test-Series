@@ -72,5 +72,40 @@
     "questions": 10,
     "durationSec": 1700,
     "createdAt": "2026-11-05T08:28:27.048Z"
+  },
+  {
+    "name": "Custom Test 1",
+    "path": "CUSTOM/computer-science-engineering/custom-custom-test-1-1793869074428.html",
+    "branch": "COMPUTER SCIENCE ENGINEERING",
+    "subjects": [
+      "Operating Systems",
+      "Databases"
+    ],
+    "questions": 10,
+    "durationSec": 1700,
+    "createdAt": "2026-11-05T08:57:54.433Z"
+  },
+  {
+    "name": "Matrix Check",
+    "path": "CUSTOM/civil-engineering/custom-matrix-check-1793869103879.html",
+    "branch": "CIVIL ENGINEERING",
+    "subjects": [
+      "Solid Mechanics",
+      "General Aptitude"
+    ],
+    "questions": 10,
+    "durationSec": 1700,
+    "createdAt": "2026-11-05T08:58:23.884Z"
+  },
+  {
+    "name": "Matrix Check 2",
+    "path": "CUSTOM/mechanical-engineering/custom-matrix-check-2-1793869104105.html",
+    "branch": "MECHANICAL ENGINEERING",
+    "subjects": [
+      "Thermodynamics"
+    ],
+    "questions": 15,
+    "durationSec": 2550,
+    "createdAt": "2026-11-05T08:58:24.113Z"
   }
 ]

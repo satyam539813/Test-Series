@@ -197,6 +197,9 @@
         if (!branchSel.value) return setStatus("Pick a branch first.", true);
         if (!selected.length) return setStatus("Pick at least one subject.", true);
         generateBtn.disabled = true;
+        // Open the destination tab now (popup blockers reject window.open
+        // after the async generation finishes), then navigate it.
+        const pendingTab = window.open("about:blank", "_blank");
         setStatus(`Building your ${countEl.value}-question test…`);
         try {
           const response = await fetch("custom/generate", {
@@ -215,7 +218,8 @@
           setStatus(`Ready: ${entry.questions} questions, about ${Math.round(entry.durationSec / 60)} minutes.`);
           if (entry.dataUrl) {
             const blobUrl = openDataUrl(entry.dataUrl);
-            if (blobUrl) window.open(blobUrl, "_blank", "noopener");
+            if (pendingTab && !pendingTab.closed && blobUrl) pendingTab.location.href = blobUrl;
+            else if (blobUrl) window.open(blobUrl, "_blank", "noopener");
             try {
               const list = JSON.parse(localStorage.getItem("custom-tests-local-v1") || "[]");
               list.push({ name: entry.name, branch: entry.branch, questions: entry.questions, href: entry.dataUrl });
@@ -223,7 +227,9 @@
               localStorage.setItem("custom-tests-local-v1", JSON.stringify(list));
             } catch (_) {}
           } else {
-            window.open(`paper.html?path=${encodeURIComponent(entry.path)}`, "_blank", "noopener");
+            const target = `paper.html?path=${encodeURIComponent(entry.path)}`;
+            if (pendingTab && !pendingTab.closed) pendingTab.location.href = target;
+            else window.open(target, "_blank", "noopener");
           }
           await loadRecent();
         } catch (error) {
