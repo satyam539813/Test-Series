@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   }
   const mapped = upstreamPath(paperPath);
   const url = `${ORIGIN}/${encoder(mapped)}`;
+  const host = String(req.headers.host || "").trim() || "bijzlitestseries4-local.vercel.app";
   try {
     const upstream = await fetch(url, {
       headers: {
@@ -26,9 +27,11 @@ export default async function handler(req, res) {
       return res.status(upstream.status).send("Paper not found upstream");
     }
     const html = await upstream.text();
-    const cleaned = cleanPaperVercel(html, mapped);
+    const cleaned = cleanPaperVercel(html, mapped, host);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "no-cache");
+    // Papers are immutable per path: let the CDN serve repeats so the
+    // upstream fetch + patch cost is paid once per path per week.
+    res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=86400");
     return res.status(200).send(cleaned);
   } catch (error) {
     return res.status(502).send(`Paper fetch failed: ${error.message}`);

@@ -27,19 +27,37 @@
     {
       "source": "/assets/calculator-icon.png",
       "destination": "/api/calc-icon"
+    },
+    {
+      "source": "/custom/meta",
+      "destination": "https://bijzlitestseries4-custom.vercel.app/api/custom-meta"
+    },
+    {
+      "source": "/custom/generate",
+      "destination": "https://bijzlitestseries4-custom.vercel.app/api/custom-generate"
     }
   ],
   "headers": [
     {
       "source": "/assets/app.js",
-    "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
-  },
-  {
-    "source": "/assets/styles.css",
-    "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
-  },
-  {
-    "source": "/assets/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/assets/styles.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/assets/:path*",
       "headers": [
         {
           "key": "Cache-Control",

@@ -26,5 +26,51 @@
     "questions": 30,
     "durationSec": 5100,
     "createdAt": "2026-11-05T07:32:33.984Z"
+  },
+  {
+    "name": "Local Check",
+    "path": "CUSTOM/computer-science-engineering/custom-local-check-1793867283390.html",
+    "branch": "COMPUTER SCIENCE ENGINEERING",
+    "subjects": [
+      "Operating Systems",
+      "General Aptitude"
+    ],
+    "questions": 7,
+    "durationSec": 1190,
+    "createdAt": "2026-11-05T08:28:03.399Z"
+  },
+  {
+    "name": "GA Check",
+    "path": "CUSTOM/computer-science-engineering/custom-ga-check-1793867290011.html",
+    "branch": "COMPUTER SCIENCE ENGINEERING",
+    "subjects": [
+      "General Aptitude"
+    ],
+    "questions": 10,
+    "durationSec": 1700,
+    "createdAt": "2026-11-05T08:28:10.015Z"
+  },
+  {
+    "name": "OS Check",
+    "path": "CUSTOM/computer-science-engineering/custom-os-check-1793867302467.html",
+    "branch": "COMPUTER SCIENCE ENGINEERING",
+    "subjects": [
+      "Operating Systems"
+    ],
+    "questions": 10,
+    "durationSec": 1700,
+    "createdAt": "2026-11-05T08:28:22.475Z"
+  },
+  {
+    "name": "Local Check 2",
+    "path": "CUSTOM/computer-science-engineering/custom-local-check-2-1793867307046.html",
+    "branch": "COMPUTER SCIENCE ENGINEERING",
+    "subjects": [
+      "Operating Systems",
+      "General Aptitude"
+    ],
+    "questions": 10,
+    "durationSec": 1700,
+    "createdAt": "2026-11-05T08:28:27.048Z"
   }
 ]

@@ -412,6 +412,10 @@ export function patchDummy(js) {
     'html[data-bijzli-gate="true"] body[data-theme="dark"]{background:#0a0a0d}',
     'html[data-bijzli-gate="true"] body[data-theme="green"]{background:#0a0f0c}',
     'html[data-bijzli-gate="true"] body::before{display:none}',
+  'html[data-bijzli-gate="true"] body{--bg:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--border:rgba(255,255,255,.08)!important;--header-bg:#14151a!important;--panel-bg:#14151a!important;--head:#14151a!important;--accent:#a78bfa!important;--opt-bg:#1a1b22!important;--input-bg:#101014!important;background:#0a0a0d!important;color:#f2f2f5!important}',
+  'html[data-bijzli-gate="true"] .qcard,html[data-bijzli-gate="true"] .qtext,html[data-bijzli-gate="true"] .qid,html[data-bijzli-gate="true"] .tags,html[data-bijzli-gate="true"] .gate-q-info,html[data-bijzli-gate="true"] .gate-info-chip{color:#f2f2f5!important}',
+  'html[data-bijzli-gate="true"] .tags{color:#a1a1aa!important}',
+  'html[data-bijzli-gate="true"] header#pageHeader{display:none!important}',
     'html[data-bijzli-gate="true"] .gate-header{background:#14151a;border-bottom:1px solid rgba(255,255,255,.08);box-shadow:none;padding:12px 16px;color:#f2f2f5}',
     'html[data-bijzli-gate="true"] .gate-logo-area{display:none!important}',
     'html[data-bijzli-gate="true"] .gate-header-center{text-align:left;flex:1 1 auto}',
@@ -550,13 +554,35 @@ export function patchDummy(js) {
   return patched;
 }
 
-export function cleanPaperVercel(html, paperPath) {
+export function cleanPaperVercel(html, paperPath, host) {
   let cleaned = html;
+  const hostUrl = `https://${host || "bijzlitestseries4-local.vercel.app"}`;
+  const paperDir = upstreamPath(String(paperPath || "")).split("/").slice(0, -1);
 
-  if (!/<base\b/i.test(cleaned)) {
-    cleaned = cleaned.replace(/<head([^>]*)>/i, `<head$1><base href="${paperBaseOrigin(paperPath)}">`);
-    cleaned = cleaned.replace(/<head([^>]*)>/i, `<head$1><script>try{localStorage.setItem("theme","dark");localStorage.setItem("bijzli-provider-theme","dark");localStorage.setItem("test-ui-theme","dark");}catch(e){}</script>`);
-  }
+  const toAbsoluteOrigin = (ref) => {
+    const value = String(ref || "").trim();
+    if (!value || /^(?:#|data:|mailto:|tel:|javascript:|blob:|\/)/i.test(value)) return ref;
+    if (/^https?:\/\//i.test(value)) return ref;
+    const hashIndex = value.search(/[?#]/);
+    const pathPart = hashIndex >= 0 ? value.slice(0, hashIndex) : value;
+    const suffix = hashIndex >= 0 ? value.slice(hashIndex) : "";
+    if (!pathPart) return ref;
+    const segments = [...paperDir];
+    for (const part of pathPart.split("/")) {
+      if (!part || part === ".") continue;
+      if (part === "..") segments.pop();
+      else segments.push(part);
+    }
+    return `${ORIGIN}/${segments.map(encodeURIComponent).join("/")}${suffix}`;
+  };
+
+  // Pre-paint dark-theme force (before any paper engine reads storage).
+  // NOTE: no <base> here — it would hijack resolution and bypass the
+  // patched functions. Relative refs become absolute URLs instead.
+  cleaned = cleaned.replace(
+    /<head([^>]*)>/i,
+    `<head$1><script>try{localStorage.setItem("theme","dark");localStorage.setItem("bijzli-provider-theme","dark");localStorage.setItem("test-ui-theme","dark");}catch(e){}</script>`
+  );
 
   // Route patched assets through Vercel functions (see vercel.json rewrites).
   cleaned = cleaned.replace(
@@ -567,9 +593,20 @@ export function cleanPaperVercel(html, paperPath) {
         : ref.includes("made-easy")
           ? "made-easy-dummy.js"
           : "progress.js";
-      return `${attr}=${quote}/assets/${name}?v=20261105-ui4${quote}`;
+      return `${attr}=${quote}${hostUrl}/assets/${name}?v=20261105-ui7${quote}`;
     }
   );
+  cleaned = cleaned.replace(/\b(src|href|poster|data-src|data-href)=(["'])([^"']+)\2/gi, (match, attr, quote, ref) => {
+    return `${attr}=${quote}${toAbsoluteOrigin(ref)}${quote}`;
+  });
+  cleaned = cleaned.replace(/\burl\(\s*(["']?)([^"')]+)\1\s*\)/gi, (match, quote, ref) => {
+    const absolute = toAbsoluteOrigin(ref);
+    return absolute === ref ? match : `url(${quote}${absolute}${quote})`;
+  });
+  // 2027 papers embed ../media/... in JSON strings resolved at runtime.
+  cleaned = cleaned.replace(/"((?:\.\.\/)+media\/[^"]+)"/g, (match, ref) => {
+    return `"${toAbsoluteOrigin(ref)}"`;
+  });
 
   // Scrub provider branding from paper chrome (same as the local server).
   cleaned = cleaned
@@ -585,7 +622,7 @@ export function cleanPaperVercel(html, paperPath) {
     .replace(/<script[^>]*src=["']\/\.netlify\/scripts\/hud[^>]*>\s*<\/script>/gi, "")
     .replace(
       "</head>",
-      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}@media (max-width:640px){html[data-bijzli-classes] .test-layout{display:flex;flex-direction:column}html[data-bijzli-classes] .right-panel{order:-1}html[data-bijzli-classes] .top-toolbar{gap:10px}html[data-bijzli-classes] .action-row{display:grid;grid-template-columns:1fr 1fr}html[data-bijzli-classes] .action-row .btn{width:100%}html[data-bijzli-classes] .timer-pill{padding:8px 10px;font-size:12px}html[data-bijzli-classes] .theme-toggle-btn{display:none}html[data-bijzli-classes] #pause-timer-btn{display:none}html[data-bijzli-classes] .timer-pill span{display:none}}.classes-palette-toggle{display:none}@media (max-width:640px){html[data-bijzli-classes] .classes-palette-toggle{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:1700;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.45)}html[data-bijzli-classes] .left-panel{position:fixed!important;top:0;right:0;bottom:0;animation:none!important;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-classes] body.classes-palette-open .left-panel{transform:none}}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
+      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader,#noticeBar{display:none!important}.adminFloat{display:none!important}@media (max-width:640px){html[data-bijzli-classes] .test-layout{display:flex;flex-direction:column}html[data-bijzli-classes] .right-panel{order:-1}html[data-bijzli-classes] .top-toolbar{gap:10px}html[data-bijzli-classes] .action-row{display:grid;grid-template-columns:1fr 1fr}html[data-bijzli-classes] .action-row .btn{width:100%}html[data-bijzli-classes] .timer-pill{padding:8px 10px;font-size:12px}html[data-bijzli-classes] .theme-toggle-btn{display:none}html[data-bijzli-classes] #pause-timer-btn{display:none}html[data-bijzli-classes] .timer-pill span{display:none}}.classes-palette-toggle{display:none}@media (max-width:640px){html[data-bijzli-classes] .classes-palette-toggle{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:1700;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.45)}html[data-bijzli-classes] .left-panel{position:fixed!important;top:0;right:0;bottom:0;animation:none!important;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-classes] body.classes-palette-open .left-panel{transform:none}}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
     )
     .replace("</body>", `${hostBridge(paperPath)}</body>`);
 }

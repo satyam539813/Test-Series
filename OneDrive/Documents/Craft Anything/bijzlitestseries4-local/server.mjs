@@ -460,6 +460,10 @@ function patchDummy(js) {
     'html[data-bijzli-gate="true"] body[data-theme="dark"]{background:#0a0a0d}',
     'html[data-bijzli-gate="true"] body[data-theme="green"]{background:#0a0f0c}',
     'html[data-bijzli-gate="true"] body::before{display:none}',
+  'html[data-bijzli-gate="true"] body{--bg:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--border:rgba(255,255,255,.08)!important;--header-bg:#14151a!important;--panel-bg:#14151a!important;--head:#14151a!important;--accent:#a78bfa!important;--opt-bg:#1a1b22!important;--input-bg:#101014!important;background:#0a0a0d!important;color:#f2f2f5!important}',
+  'html[data-bijzli-gate="true"] .qcard,html[data-bijzli-gate="true"] .qtext,html[data-bijzli-gate="true"] .qid,html[data-bijzli-gate="true"] .tags,html[data-bijzli-gate="true"] .gate-q-info,html[data-bijzli-gate="true"] .gate-info-chip{color:#f2f2f5!important}',
+  'html[data-bijzli-gate="true"] .tags{color:#a1a1aa!important}',
+  'html[data-bijzli-gate="true"] header#pageHeader{display:none!important}',
     'html[data-bijzli-gate="true"] .gate-header{background:#14151a;border-bottom:1px solid rgba(255,255,255,.08);box-shadow:none;padding:12px 16px;color:#f2f2f5}',
     'html[data-bijzli-gate="true"] .gate-logo-area{display:none!important}',
     'html[data-bijzli-gate="true"] .gate-header-center{text-align:left;flex:1 1 auto}',
@@ -637,7 +641,7 @@ function cleanPaper(html, paperPath) {
     (match, attr, quote, ref) => {
       const absolute = toAbsolute(ref);
       if (/^\/library\/assets\/(made-easy-dummy|progress|calculator)\.js/.test(absolute)) {
-        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui4${quote}`;
+        return `${attr}=${quote}${absolute.replace(/\?v=[^&#]*/, "")}?v=20261105-ui7${quote}`;
       }
       return `${attr}=${quote}${absolute}${quote}`;
     }
@@ -662,7 +666,7 @@ function cleanPaper(html, paperPath) {
     .replace(/<script[^>]*src=["']\/\.netlify\/scripts\/hud[^>]*>\s*<\/script>/gi, "")
     .replace(
       "</head>",
-      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader .brand,#pageHeader .brandLine,.adminFloat,.gate-logo-area{display:none!important}@media (max-width:640px){html[data-bijzli-classes] .test-layout{display:flex;flex-direction:column}html[data-bijzli-classes] .right-panel{order:-1}html[data-bijzli-classes] .top-toolbar{gap:10px}html[data-bijzli-classes] .action-row{display:grid;grid-template-columns:1fr 1fr}html[data-bijzli-classes] .action-row .btn{width:100%}html[data-bijzli-classes] .timer-pill{padding:8px 10px;font-size:12px}html[data-bijzli-classes] .theme-toggle-btn{display:none}html[data-bijzli-classes] #pause-timer-btn{display:none}html[data-bijzli-classes] .timer-pill span{display:none}}.classes-palette-toggle{display:none}@media (max-width:640px){html[data-bijzli-classes] .classes-palette-toggle{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:1700;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.45)}html[data-bijzli-classes] .left-panel{position:fixed!important;top:0;right:0;bottom:0;animation:none!important;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-classes] body.classes-palette-open .left-panel{transform:none}}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
+      '<link rel="icon" href="data:,"><style id="bijzli-host-style">#nl-badge-frame,#netlify-badge,.netlify-badge{display:none!important}.qcard{content-visibility:auto;contain-intrinsic-size:auto 720px}#header-user,.telegram-admin-btn,.developer-note,.free-note,.safety-note,#noticeBar{display:none!important}#pageHeader,#noticeBar{display:none!important}.adminFloat{display:none!important}@media (max-width:640px){html[data-bijzli-classes] .test-layout{display:flex;flex-direction:column}html[data-bijzli-classes] .right-panel{order:-1}html[data-bijzli-classes] .top-toolbar{gap:10px}html[data-bijzli-classes] .action-row{display:grid;grid-template-columns:1fr 1fr}html[data-bijzli-classes] .action-row .btn{width:100%}html[data-bijzli-classes] .timer-pill{padding:8px 10px;font-size:12px}html[data-bijzli-classes] .theme-toggle-btn{display:none}html[data-bijzli-classes] #pause-timer-btn{display:none}html[data-bijzli-classes] .timer-pill span{display:none}}.classes-palette-toggle{display:none}@media (max-width:640px){html[data-bijzli-classes] .classes-palette-toggle{display:inline-flex;position:fixed;right:16px;bottom:16px;z-index:1700;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.14);background:#1a1b22;color:#f2f2f5;border-radius:999px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.45)}html[data-bijzli-classes] .left-panel{position:fixed!important;top:0;right:0;bottom:0;animation:none!important;width:min(320px,90vw);z-index:1600;background:#14151a;border-left:1px solid rgba(255,255,255,.1);padding:16px;overflow-y:auto;transform:translateX(105%);transition:transform .25s ease;box-shadow:-20px 0 50px rgba(0,0,0,.5)}html[data-bijzli-classes] body.classes-palette-open .left-panel{transform:none}}html[data-bijzli-classes] body.theme-dark{--bg-top:#0a0a0d!important;--bg-bottom:#0a0a0d!important;--card:#14151a!important;--ink:#f2f2f5!important;--muted:#a1a1aa!important;--accent:#a78bfa!important;--accent-strong:#c4b5fd!important;--soft-border:rgba(255,255,255,.08)!important;--shadow:0 20px 50px rgba(0,0,0,.45)!important}html[data-bijzli-classes] body.theme-dark h1,html[data-bijzli-classes] body.theme-dark h2,html[data-bijzli-classes] body.theme-dark h3,html[data-bijzli-classes] body.theme-dark h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}</style></head>'
     )
     .replace("</body>", `${hostBridge(paperPath)}</body>`);
 }
@@ -874,7 +878,7 @@ async function branchIndex(branchName) {
   for (const entry of subjectMap.values()) {
     let questions = 0;
     for (const path of entry.papers) questions += await paperQcardCount(path);
-    if (questions > 0) subjectList.push({ name: entry.name, papers: entry.papers.size, questions });
+    if (questions > 0) subjectList.push({ name: entry.name, papers: entry.papers.size, questions, paths: [...entry.papers] });
   }
   subjectList.sort((a, b) => b.questions - a.questions);
 
@@ -941,26 +945,29 @@ async function generateCustomTest({ branch, subjects, count, name }) {
   if (!wanted.length) throw new Error("Select at least one subject");
   const total = Math.max(1, Math.min(100, Math.floor(Number(count) || 30)));
 
+  const poolTests = index.tests.filter((t) => !String(t.title).includes("|"));
+  const poolPathSet = new Set(poolTests.map((t) => t.path));
   const pools = [];
   for (const subjectName of wanted) {
     const subject = index.subjects.find((s) => s.name.toLowerCase() === subjectName);
     if (!subject) throw new Error(`Unknown subject: ${subjectName}`);
     const isGA = subjectName === "general aptitude";
     const papers = isGA
-      ? index.tests.map((t) => t.path)
-      : index.tests.filter((t) => {
-          const title = t.title.toLowerCase();
-          return title.includes(subjectName);
-        }).map((t) => t.path);
+      ? poolTests.map((t) => t.path)
+      : (Array.isArray(subject.paths) && subject.paths.length
+          ? subject.paths.filter((path) => poolPathSet.has(path))
+          : poolTests.filter((t) => {
+              const title = t.title.toLowerCase();
+              return title.includes(subjectName);
+            }).map((t) => t.path));
     const unique = [...new Set(papers)];
     pools.push({ subject: subject.name, isGA, papers: unique });
   }
 
   const picked = [];
   const pickedKeys = new Set();
-  const quotas = pools.map((pool, i) =>
-    Math.max(1, Math.floor((total * (pool.papers.length || 1)) / pools.reduce((sum, p) => sum + (p.papers.length || 1), 0)))
-  );
+  const baseQuota = Math.floor(total / pools.length);
+  const quotas = pools.map((_, i) => Math.max(1, baseQuota + (i < total % pools.length ? 1 : 0)));
   const attempts = Math.max(total * 40, 400);
 
   for (let attempt = 0; attempt < attempts && picked.length < total; attempt += 1) {

@@ -3,3 +3,4 @@ library/
 node_modules/
 *.log
 .vercel
+.env*
