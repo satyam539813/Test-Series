@@ -4,25 +4,66 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/paper", "destination": "/api/paper" },
-    { "source": "/assets/made-easy-dummy.js", "destination": "/api/dummy" },
-    { "source": "/assets/progress.js", "destination": "/api/progress" },
-    { "source": "/assets/calculator.js", "destination": "/api/calculator" },
-    { "source": "/assets/calculator.css", "destination": "/api/calc-css" },
-    { "source": "/assets/calculator-icon.png", "destination": "/api/calc-icon" }
+    {
+      "source": "/paper",
+      "destination": "/api/paper"
+    },
+    {
+      "source": "/assets/made-easy-dummy.js",
+      "destination": "/api/dummy"
+    },
+    {
+      "source": "/assets/progress.js",
+      "destination": "/api/progress"
+    },
+    {
+      "source": "/assets/calculator.js",
+      "destination": "/api/calculator"
+    },
+    {
+      "source": "/assets/calculator.css",
+      "destination": "/api/calc-css"
+    },
+    {
+      "source": "/assets/calculator-icon.png",
+      "destination": "/api/calc-icon"
+    }
   ],
   "headers": [
     {
-      "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }]
+      "source": "/assets/app.js",
+    "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+  },
+  {
+    "source": "/assets/styles.css",
+    "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+  },
+  {
+    "source": "/assets/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
     },
     {
-      "source": "/data/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=300, stale-while-revalidate=86400" }]
+      "source": "/data/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=86400"
+        }
+      ]
     },
     {
-      "source": "/(index.html|paper.html)",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      "source": "/:file(index.html|paper.html|custom.html)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
     }
   ]
 }
