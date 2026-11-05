@@ -1,0 +1,9 @@
+# Keep the Vercel deployment small: the 1.4 GB local paper mirror is served
+# by the /paper serverless function instead (papers are fetched live upstream).
+library/
+node_modules/
+data/
+tools/
+*.log
+README.md
+.vercel

@@ -414,7 +414,7 @@ async function vendorMathJax() {
   // calculator.js loads its stylesheet/icon via string concatenation
   // (baseAssetsPath + "calculator.css"), so the HTML scanner never sees them.
   // Fetch them explicitly or the panel renders unstyled at the page bottom.
-  for (const name of ["calculator.css", "calculator-icon.png"]) {
+  for (const name of ["calculator.css", "calculator-icon.png", "progress.js"]) {
     const assetPath = `assets/${name}`;
     const assetOut = join(LIB, assetPath);
     if (existsSync(assetOut) && !FORCE) {

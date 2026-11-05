@@ -318,12 +318,24 @@ function hostBridge(paperPath) {
 }
 
 function patchProgress(js) {
-  return js
-    .replace(
+  let out = String(js || "");
+  // Old-style files expose currentPaperPath(); current upstream files use
+  // resolvePaperKey(), which derives the key from location.pathname and
+  // breaks inside srcdoc frames. Point both at the bridge paper path.
+  if (out.includes("function currentPaperPath")) {
+    out = out.replace(
       /\n  function currentPaperPath\(\)\s*\{[\s\S]*?\n  \}/,
       "\n  function currentPaperPath() {\n    return String(window.__BIJZLI_PAPER__ || '').toLowerCase().replace(/[.]html?$/, '');\n  }"
-    )
-    .replace("    read: read\n  };", "    read: read,\n    reset: function () { recorded = false; }\n  };");
+    );
+  }
+  if (out.includes("function resolvePaperKey")) {
+    out = out.replace(
+      /function resolvePaperKey\(\)\s*\{[\s\S]*?\n  \}/,
+      "function resolvePaperKey() {\n    return String(window.__BIJZLI_PAPER__ || '').toLowerCase().replace(/\\.html?$/, '');\n  }"
+    );
+  }
+  out = out.replace("    read: read\n  };", "    read: read,\n    reset: function () { recorded = false; }\n  };");
+  return out;
 }
 
 const GATE_PROGRESS_HELPERS = `
