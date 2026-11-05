@@ -1,0 +1,16 @@
+{
+  "name": "bijzli-test-series-local",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline Test Series app backed by a local paper mirror",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node server.mjs",
+    "mirror": "node tools/mirror.mjs",
+    "verify": "node tools/mirror.mjs --verify",
+    "map": "node tools/mirror.mjs --map-only"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

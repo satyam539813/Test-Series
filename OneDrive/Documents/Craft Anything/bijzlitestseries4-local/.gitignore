@@ -1,0 +1,4 @@
+# Local paper mirror — regenerate with `npm run mirror` (~1.4 GB, third-party content)
+library/
+node_modules/
+*.log

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0a0a0d">
+  <link rel="icon" href="data:,">
+  <title>Test paper</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #0a0a0d;
+      color: #f2f2f5;
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    #loading {
+      margin: 0;
+      padding: 24px;
+      color: #a1a1aa;
+      font-size: 0.9rem;
+    }
+    #loading.error { color: #fca5a5; }
+    iframe {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #0a0a0d;
+    }
+    iframe.fallback {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 92px), calc(100% - 216px) calc(100% - 92px), calc(100% - 216px) 100%, 0 100%);
+    }
+    .back-library {
+      position: fixed;
+      z-index: 2147483647;
+      left: 12px;
+      bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      background: rgba(20, 21, 26, 0.92);
+      color: #f2f2f5;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+      transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+    .back-library:hover,
+    .back-library:focus-visible {
+      background: #2a2b34;
+      border-color: rgba(167,139,250,0.5);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <a class="back-library" href="index.html#/" title="Back to paper library">&larr; Library</a>
+  <p id="loading" role="status" aria-live="polite">Loading test&hellip;</p>
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const paperPath = params.get("path");
+      const loading = document.getElementById("loading");
+
+      if (!paperPath) {
+        loading.textContent = "Missing paper path.";
+        loading.classList.add("error");
+        return;
+      }
+
+      const frame = document.createElement("iframe");
+      frame.title = paperPath.split("/").pop() || "Test paper";
+      frame.style.visibility = "hidden";
+      document.body.append(frame);
+
+      fetch(`paper?path=${encodeURIComponent(paperPath)}`)
+        .then((response) => (response.ok ? response.text() : Promise.reject(new Error("Paper unavailable"))))
+        .then((html) => {
+          if (!html.includes("bijzli-host-style")) throw new Error("Paper unavailable");
+          loading.remove();
+          frame.style.visibility = "visible";
+          frame.srcdoc = html;
+        })
+        .catch(() => {
+          frame.remove();
+          loading.textContent = "Paper not found in the local library. Run npm run mirror to download it.";
+          loading.classList.add("error");
+        });
+    })();
+  </script>
+</body>
+</html>

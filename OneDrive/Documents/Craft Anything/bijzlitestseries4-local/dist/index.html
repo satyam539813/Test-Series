@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test Series</title>
+  <meta name="description" content="Branch-wise GATE and ESE test papers that run like the real exam — question palette, countdown timer, on-screen calculator, submit flow, and a full score review.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0a0a0d">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Test Series — GATE &amp; ESE Papers">
+  <meta property="og:description" content="Branch-wise GATE and ESE papers with exam-style attempt pages, timer, calculator and instant scoring.">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171326'/%3E%3Crect x='14' y='14' width='16' height='16' rx='5' fill='%23a78bfa'/%3E%3Crect x='34' y='14' width='16' height='16' rx='5' fill='%23c4b5fd'/%3E%3Crect x='14' y='34' width='16' height='16' rx='5' fill='%238b7cf6'/%3E%3Crect x='34' y='34' width='16' height='16' rx='5' fill='%236d5bd0'/%3E%3C/svg%3E">
+
+  <link rel="preload" href="data/series-manifest.json" as="fetch" crossorigin>
+  <link rel="stylesheet" href="assets/styles.css">
+
+  <script>
+    (function () {
+      document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#browser">Skip to paper browser</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="topbar-brand" href="#/" aria-label="Test Series home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2.5"></rect><rect x="13" y="3" width="8" height="8" rx="2.5"></rect><rect x="3" y="13" width="8" height="8" rx="2.5"></rect><rect x="13" y="13" width="8" height="8" rx="2.5"></rect></svg>
+        </span>
+        <span class="brand-words">
+          <strong>Test Series</strong>
+          <span>Local library</span>
+        </span>
+      </a>
+
+      <search class="search-shell" role="search">
+        <label class="sr-only" for="global-search">Search all test papers</label>
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+        </svg>
+        <input id="global-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search papers" aria-describedby="search-hint">
+        <p id="search-hint" class="sr-only">
+          Type to search across all branches. Use arrow keys to move through results and Enter to open a paper.
+        </p>
+        <kbd class="search-kbd" aria-hidden="true"><span class="kbd-mod">Ctrl</span>K</kbd>
+        <button id="search-clear" class="search-clear" type="button" hidden aria-label="Clear search">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+          </svg>
+        </button>
+      </search>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="hero card">
+      <p class="date-line"><span id="date-line">Welcome back</span><span class="date-dot" aria-hidden="true"></span></p>
+
+      <div class="hero-copy">
+        <h1>Practice smarter,<br>score higher.</h1>
+
+        <p class="subtitle">
+          Branch-wise GATE and ESE papers that run like the real exam — question palette, countdown timer,
+          on-screen calculator, submit flow, and a full score review with solutions.
+        </p>
+
+        <div class="hero-actions">
+          <button id="cta-browse" class="primary-btn" type="button">
+            Browse branches
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </button>
+          <button id="cta-resume" class="ghost-btn" type="button" hidden>
+            Resume last paper
+          </button>
+        </div>
+      </div>
+
+      <div class="stats" role="list">
+        <article class="stat-card" role="listitem">
+          <h2 id="branch-count">-</h2>
+          <p>Branches</p>
+        </article>
+        <article class="stat-card" role="listitem">
+          <h2 id="provider-count">-</h2>
+          <p>Providers</p>
+        </article>
+        <article class="stat-card" role="listitem">
+          <h2 id="test-count">-</h2>
+          <p>Papers</p>
+        </article>
+        <article class="stat-card stat-card-you" role="listitem">
+          <h2 id="opened-count">0</h2>
+          <p>Attempted by you</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="activity-card" class="activity card" aria-labelledby="activity-title" hidden>
+      <div class="activity-top">
+        <div>
+          <p class="eyebrow">Your progress</p>
+          <h2 id="activity-title">Track what you have attempted</h2>
+        </div>
+        <div class="activity-actions">
+          <button id="export-activity" class="ghost-btn ghost-btn-sm" type="button">Export CSV</button>
+          <button id="clear-activity" class="ghost-btn ghost-btn-sm" type="button">Clear history</button>
+        </div>
+      </div>
+
+      <div class="activity-grid">
+        <div class="activity-focus">
+          <div class="kpi-row" id="kpi-row"></div>
+          <div class="trend" id="activity-trend" aria-label="Recent score trend"></div>
+        </div>
+        <div class="activity-analytics" id="activity-analytics" aria-label="Performance analytics"></div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Activity view">
+        <button class="tab" type="button" role="tab" id="tab-continue" data-tab="continue" aria-controls="activity-list" aria-selected="true">
+          Continue <span class="tab-count" data-count="continue">0</span>
+        </button>
+        <button class="tab" type="button" role="tab" id="tab-saved" data-tab="saved" aria-controls="activity-list" aria-selected="false">
+          Saved <span class="tab-count" data-count="saved">0</span>
+        </button>
+        <button class="tab" type="button" role="tab" id="tab-scores" data-tab="scores" aria-controls="activity-list" aria-selected="false">
+          Attempted <span class="tab-count" data-count="scores">0</span>
+        </button>
+      </div>
+
+      <div id="activity-list" class="activity-list" role="tabpanel" aria-labelledby="tab-continue"></div>
+    </section>
+
+    <section id="browser" class="selector card" aria-labelledby="selector-title" tabindex="-1">
+      <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+
+      <div class="selector-top">
+        <div>
+          <p class="step-text" id="step-text">Step 1 of 4</p>
+          <h2 id="selector-title">Select your branch</h2>
+        </div>
+        <button id="reset-btn" class="ghost-btn" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+          Back
+        </button>
+      </div>
+
+      <p id="status-note" class="status-note" role="status" aria-live="polite">Choose your engineering branch.</p>
+
+      <div id="skeleton" class="skeleton-grid" aria-hidden="true" hidden>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+
+      <section id="search-section" class="hidden" aria-label="Search results">
+        <div class="section-head">
+          <h3 id="search-heading">Search results</h3>
+          <p id="search-count" class="result-count"></p>
+        </div>
+        <div id="search-results" class="tests-list"></div>
+        <button id="search-more" class="ghost-btn ghost-btn-wide" type="button" hidden></button>
+      </section>
+
+      <section id="branch-section">
+        <div class="section-head">
+          <h3>Engineering branch</h3>
+        </div>
+        <div id="branch-grid" class="branch-grid"></div>
+      </section>
+
+      <section id="provider-section" class="hidden">
+        <div class="section-head">
+          <h3>Test series provider</h3>
+        </div>
+        <div id="provider-grid" class="provider-grid"></div>
+      </section>
+
+      <section id="series-section" class="hidden">
+        <div class="section-head">
+          <h3>Batch / year</h3>
+        </div>
+        <div id="series-grid" class="series-grid"></div>
+      </section>
+
+      <section id="tests-section" class="hidden">
+        <div class="section-head tests-top">
+          <h3>Test papers</h3>
+          <div class="tests-tools">
+            <label class="sr-only" for="filter-input">Filter papers in this batch</label>
+            <input id="filter-input" type="search" autocomplete="off" placeholder="Filter this batch">
+            <label class="sr-only" for="sort-select">Sort papers</label>
+            <select id="sort-select">
+              <option value="default">Series order</option>
+              <option value="az">Title A to Z</option>
+              <option value="za">Title Z to A</option>
+              <option value="score">Best score first</option>
+              <option value="recent">Latest attempt first</option>
+            </select>
+            <label class="sr-only" for="status-filter">Filter by attempt status</label>
+            <select id="status-filter">
+              <option value="all">Show all papers</option>
+              <option value="attempted">Attempted only</option>
+              <option value="unattempted">Unattempted only</option>
+              <option value="saved">Saved papers</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="filter-chips" class="chip-wrap" role="group" aria-label="Filter by paper type"></div>
+        <div id="year-chips" class="chip-wrap chip-wrap-sub" role="group" aria-label="Filter by exam year"></div>
+
+        <div class="tests-meta">
+          <p id="result-count" class="result-count"></p>
+        </div>
+
+        <div id="tests-list" class="tests-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
